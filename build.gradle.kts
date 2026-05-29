@@ -165,7 +165,6 @@ tasks.coverallsJacoco {
 
     dependsOn(
         tasks.test,
-        tasks.jacocoTestReport
+        tasks.jacocoTestReport,
     )
 }
-
