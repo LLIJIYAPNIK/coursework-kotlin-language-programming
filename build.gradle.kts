@@ -9,6 +9,7 @@ plugins {
     jacoco
 
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
+    id("com.github.nbaztec.coveralls-jacoco") version "1.2.20"
 }
 
 group = "ru.university.toursystem"
@@ -159,3 +160,12 @@ ktlint {
         )
     }
 }
+
+tasks.coverallsJacoco {
+
+    dependsOn(
+        tasks.test,
+        tasks.jacocoTestReport
+    )
+}
+
