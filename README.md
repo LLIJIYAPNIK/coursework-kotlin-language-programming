@@ -3,8 +3,8 @@
 Консольное приложение на Kotlin для управления базой данных туристических туров, клиентов и бронирований.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![CI](https://github.com/LLIJIYAPNIK/https://github.com/LLIJIYAPNIK/coursework-kotlin-language-programming/actions/workflows/ci.yml/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/LLIJIYAPNIK/https://github.com/LLIJIYAPNIK/coursework-kotlin-language-programming/badge.svg?branch=master)](https://coveralls.io/github/LLIJIYAPNIK/https://github.com/LLIJIYAPNIK/coursework-kotlin-language-programming?branch=master)
+![CI](https://github.com/LLIJIYAPNIK/coursework-kotlin-language-programming/actions/workflows/ci.yml/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/LLIJIYAPNIK/coursework-kotlin-language-programming/badge.svg?branch=master)](https://coveralls.io/github/LLIJIYAPNIK/coursework-kotlin-language-programming?branch=master)
 [![ktlint](https://img.shields.io/badge/code%20style-ktlint-000000.svg)](https://github.com/pinterest/ktlint)
 
 ## 📋 Описание
