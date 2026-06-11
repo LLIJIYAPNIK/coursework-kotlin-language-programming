@@ -1,9 +1,13 @@
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.io.PrintStream
 import kotlin.reflect.full.memberProperties
 
-class DBManager(private val filepath: String) {
+class DBManager(
+    private val filepath: String,
+    private val output: PrintStream = System.out,
+) {
     private val json =
         Json {
             prettyPrint = true
@@ -23,7 +27,7 @@ class DBManager(private val filepath: String) {
             db = json.decodeFromString(file.readText(Charsets.UTF_8))
             true
         } catch (e: Exception) {
-            println("Ошибка загрузки БД: ${e.message}")
+            output.println("Ошибка загрузки БД: ${e.message}")
             db = TourDB()
             true
         }
@@ -36,9 +40,9 @@ class DBManager(private val filepath: String) {
                 Charsets.UTF_8,
             )
 
-            println("Данные сохранены.")
+            output.println("Данные сохранены.")
         } catch (e: Exception) {
-            println("Ошибка сохранения: ${e.message}")
+            output.println("Ошибка сохранения: ${e.message}")
         }
     }
 

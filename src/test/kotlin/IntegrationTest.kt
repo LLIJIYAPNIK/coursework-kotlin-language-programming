@@ -71,7 +71,6 @@ class IntegrationTest {
         TestDataGenerator.generate(testFile)
         manager.load()
 
-        // Работа с разными сущностями
         val tours = manager.getList("tours")
         val clients = manager.getList("clients")
         val bookings = manager.getList("bookings")
@@ -151,7 +150,6 @@ class IntegrationTest {
 
     @Test
     fun testLargeDatasetOperations() {
-        // Создание большого объема данных
         val db = TourDB()
         for (i in 1..100) {
             db.tours.add(Tour(i, i, i, "Тур $i", "Описание $i", 10000.0 + i * 100, 7, "active"))

@@ -87,7 +87,7 @@ src/
 1. **Клонируйте репозиторий:**
 ```bash
 git clone https://github.com/LLIJIYAPNIK/coursework-kotlin-language-programming
-cd tour-management-system
+cd coursework-kotlin-language-programming
 ```
 
 2. **Соберите проект:**

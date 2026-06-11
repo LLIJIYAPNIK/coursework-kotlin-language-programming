@@ -1,3 +1,5 @@
+import java.io.PrintStream
+
 object ConsoleHelper {
     fun inputInt(prompt: String): Int {
         while (true) {
@@ -29,23 +31,24 @@ object ConsoleHelper {
     fun printTable(
         list: List<Any>,
         entityName: String,
+        output: PrintStream = System.out,
     ) {
         if (list.isEmpty()) {
-            println("Записи отсутствуют.")
+            output.println("Записи отсутствуют.")
             return
         }
 
-        println()
-        println("Сущность: $entityName")
-        println("Количество записей: ${list.size}")
-        println()
+        output.println()
+        output.println("Сущность: $entityName")
+        output.println("Количество записей: ${list.size}")
+        output.println()
 
         list.take(5).forEach {
-            println(it)
+            output.println(it)
         }
 
         if (list.size > 5) {
-            println("... ещё ${list.size - 5} записей")
+            output.println("... ещё ${list.size - 5} записей")
         }
     }
 }

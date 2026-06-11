@@ -1,4 +1,11 @@
-class Menu(private val manager: DBManager) {
+import java.io.InputStream
+import java.io.PrintStream
+
+class Menu(
+    private val manager: DBManager,
+    private val input: InputStream = System.`in`,
+    private val output: PrintStream = System.out,
+) {
     private val entities =
         listOf(
             "tour_types",
@@ -23,112 +30,76 @@ class Menu(private val manager: DBManager) {
             "booking_insurances",
         )
 
+    private val scanner = input.bufferedReader()
+
     fun run() {
         while (true) {
-            println()
-            println("СИСТЕМА УЧЁТА ТУРОВ")
-            println("1. Работа с сущностями")
-            println("2. Сохранить")
-            println("0. Выход")
+            output.println()
+            output.println("СИСТЕМА УЧЁТА ТУРОВ")
+            output.println("1. Работа с сущностями")
+            output.println("2. Сохранить")
+            output.println("0. Выход")
 
-            when (ConsoleHelper.inputInt("Выбор: ")) {
+            when (inputInt("Выбор: ")) {
                 1 -> showEntityMenu()
                 2 -> manager.save()
                 0 -> {
-                    val answer =
-                        ConsoleHelper.inputStr(
-                            "Сохранить перед выходом? (y/n): ",
-                        )
-
+                    val answer = inputStr("Сохранить перед выходом? (y/n): ")
                     if (answer.lowercase() == "y") {
                         manager.save()
                     }
-
                     return
                 }
             }
         }
     }
 
-    private fun showEntityMenu() {
+    fun showEntityMenu() {
         val entityName = chooseEntity()
 
         while (true) {
-            println()
-            println("Меню сущности: $entityName")
-            println("1. Показать записи")
-            println("2. Удалить запись")
-            println("3. Поиск")
-            println("4. Сортировка")
-            println("5. Агрегация")
-            println("0. Назад")
+            output.println()
+            output.println("Меню сущности: $entityName")
+            output.println("1. Показать записи")
+            output.println("2. Удалить запись")
+            output.println("3. Поиск")
+            output.println("4. Сортировка")
+            output.println("5. Агрегация")
+            output.println("0. Назад")
 
-            when (ConsoleHelper.inputInt("Выбор: ")) {
+            when (inputInt("Выбор: ")) {
                 1 -> {
-                    ConsoleHelper.printTable(
-                        manager.getList(entityName),
-                        entityName,
-                    )
+                    ConsoleHelper.printTable(manager.getList(entityName), entityName, output)
                 }
 
                 2 -> {
-                    val id = ConsoleHelper.inputInt("ID: ")
-
+                    val id = inputInt("ID: ")
                     if (manager.delete(entityName, id)) {
-                        println("Удалено.")
+                        output.println("Удалено.")
                     } else {
-                        println("Запись не найдена.")
+                        output.println("Запись не найдена.")
                     }
                 }
 
                 3 -> {
-                    val field = ConsoleHelper.inputStr("Поле: ")
-                    val query = ConsoleHelper.inputStr("Запрос: ")
-
-                    val result =
-                        manager.search(
-                            entityName,
-                            field,
-                            query,
-                        )
-
-                    ConsoleHelper.printTable(result, entityName)
+                    val field = inputStr("Поле: ")
+                    val query = inputStr("Запрос: ")
+                    val result = manager.search(entityName, field, query)
+                    ConsoleHelper.printTable(result, entityName, output)
                 }
 
                 4 -> {
-                    val field = ConsoleHelper.inputStr("Поле сортировки: ")
-
-                    val reverse =
-                        ConsoleHelper.inputStr(
-                            "По убыванию? (y/n): ",
-                        ).lowercase() == "y"
-
-                    val result =
-                        manager.sort(
-                            entityName,
-                            field,
-                            reverse,
-                        )
-
-                    ConsoleHelper.printTable(result, entityName)
+                    val field = inputStr("Поле сортировки: ")
+                    val reverse = inputStr("По убыванию? (y/n): ").lowercase() == "y"
+                    val result = manager.sort(entityName, field, reverse)
+                    ConsoleHelper.printTable(result, entityName, output)
                 }
 
                 5 -> {
-                    val field = ConsoleHelper.inputStr("Поле: ")
-
-                    val func =
-                        ConsoleHelper.inputStr(
-                            "Функция (sum/avg/min/max): ",
-                        )
-
-                    val result =
-                        manager.aggregate(
-                            entityName,
-                            field,
-                            func,
-                        )
-
-                    println("$func($field) = $result")
+                    val field = inputStr("Поле: ")
+                    val func = inputStr("Функция (sum/avg/min/max): ")
+                    val result = manager.aggregate(entityName, field, func)
+                    output.println("$func($field) = $result")
                 }
 
                 0 -> return
@@ -136,20 +107,47 @@ class Menu(private val manager: DBManager) {
         }
     }
 
-    private fun chooseEntity(): String {
-        println()
-        println("Выберите сущность:")
-
+    fun chooseEntity(): String {
+        output.println()
+        output.println("Выберите сущность:")
         entities.forEachIndexed { index, value ->
-            println("${index + 1}. $value")
+            output.println("${index + 1}. $value")
         }
 
-        val idx = ConsoleHelper.inputInt("Номер: ")
-
+        val idx = inputInt("Номер: ")
         return if (idx in 1..entities.size) {
             entities[idx - 1]
         } else {
             entities[0]
         }
     }
+
+    fun inputInt(prompt: String): Int {
+        while (true) {
+            try {
+                output.print(prompt)
+                return scanner.readLine().toInt()
+            } catch (e: Exception) {
+                output.println("Введите целое число.")
+            }
+        }
+    }
+
+    fun inputDouble(prompt: String): Double {
+        while (true) {
+            try {
+                output.print(prompt)
+                return scanner.readLine().replace(',', '.').toDouble()
+            } catch (e: Exception) {
+                output.println("Введите число.")
+            }
+        }
+    }
+
+    fun inputStr(prompt: String): String {
+        output.print(prompt)
+        return scanner.readLine().trim()
+    }
+
+    fun getEntities(): List<String> = entities
 }

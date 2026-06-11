@@ -1,19 +1,24 @@
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.PrintStream
 
 class DBManagerTest {
     private val testFile = "test_tours_db.json"
     private lateinit var manager: DBManager
+    private lateinit var outputStream: ByteArrayOutputStream
 
     @BeforeEach
     fun setup() {
+        outputStream = ByteArrayOutputStream()
         TestDataGenerator.generate(testFile)
-        manager = DBManager(testFile)
+        manager = DBManager(testFile, PrintStream(outputStream))
         manager.load()
     }
 
@@ -27,6 +32,7 @@ class DBManagerTest {
 
     @Test
     fun testLoadExistingFile() {
+        outputStream.reset()
         val result = manager.load()
         assertTrue(result)
         assertTrue(manager.db.tours.isNotEmpty())
@@ -34,7 +40,7 @@ class DBManagerTest {
 
     @Test
     fun testLoadMissingFile() {
-        val missingManager = DBManager("missing_file.json")
+        val missingManager = DBManager("missing_file.json", PrintStream(outputStream))
         val result = missingManager.load()
         assertFalse(result)
     }
@@ -45,14 +51,17 @@ class DBManagerTest {
         val result = manager.load()
         assertTrue(result) // Возвращает true даже при ошибке
         assertEquals(0, manager.db.tours.size)
+        assertTrue(outputStream.toString().contains("Ошибка загрузки БД"))
     }
 
     @Test
     fun testSaveDatabase() {
+        outputStream.reset()
         manager.save()
         val file = File(testFile)
         assertTrue(file.exists())
         assertTrue(file.readText().isNotEmpty())
+        assertTrue(outputStream.toString().contains("Данные сохранены"))
     }
 
     @Test
@@ -60,9 +69,16 @@ class DBManagerTest {
         manager.db.tourTypes.add(TourType(100, "Новый тип", "Описание"))
         manager.save()
 
-        val newManager = DBManager(testFile)
+        val newManager = DBManager(testFile, PrintStream(ByteArrayOutputStream()))
         newManager.load()
         assertEquals(11, newManager.db.tourTypes.size)
+    }
+
+    @Test
+    fun testSaveWithInvalidPath() {
+        val invalidManager = DBManager("/invalid/path/file.json", PrintStream(outputStream))
+        invalidManager.save()
+        assertTrue(outputStream.toString().contains("Ошибка сохранения"))
     }
 
     @Test
@@ -224,7 +240,6 @@ class DBManagerTest {
         assertEquals(7, manager.getList("clients").size)
     }
 
-    // Тесты search()
     @Test
     fun testSearchExistingValue() {
         val result = manager.search("clients", "firstName", "Клиент1")
@@ -273,7 +288,6 @@ class DBManagerTest {
         assertTrue(result.isEmpty())
     }
 
-    // Тесты sort()
     @Test
     fun testSortAscending() {
         val result = manager.sort("tours", "basePrice")
@@ -314,7 +328,6 @@ class DBManagerTest {
         assertEquals(0, result.size)
     }
 
-    // Тесты aggregate()
     @Test
     fun testAggregateSum() {
         val result = manager.aggregate("tours", "basePrice", "sum")
@@ -375,7 +388,27 @@ class DBManagerTest {
         assertTrue(result > 0)
     }
 
-    // Интеграционные тесты
+    @Test
+    fun testLoadErrorMessage() {
+        File(testFile).writeText("{invalid json}")
+        manager.load()
+        assertTrue(outputStream.toString().contains("Ошибка загрузки БД"))
+    }
+
+    @Test
+    fun testSaveSuccessMessage() {
+        outputStream.reset()
+        manager.save()
+        assertTrue(outputStream.toString().contains("Данные сохранены"))
+    }
+
+    @Test
+    fun testSaveErrorMessage() {
+        val invalidManager = DBManager("/nonexistent/path/db.json", PrintStream(outputStream))
+        invalidManager.save()
+        assertTrue(outputStream.toString().contains("Ошибка сохранения"))
+    }
+
     @Test
     fun testGeneratedData() {
         assertEquals(10, manager.db.clients.size)
@@ -389,7 +422,7 @@ class DBManagerTest {
     @Test
     fun testDeleteAndSearch() {
         manager.delete("clients", 2)
-        val result = manager.search("clients", "id", "Клиент2")
+        val result = manager.search("clients", "firstName", "Клиент2")
         assertTrue(result.isEmpty())
     }
 
@@ -398,11 +431,28 @@ class DBManagerTest {
         manager.db.tourTypes.add(TourType(100, "Новый", "Описание"))
         manager.save()
 
-        val newManager = DBManager(testFile)
+        val newManager = DBManager(testFile, PrintStream(ByteArrayOutputStream()))
         newManager.load()
         assertEquals(11, newManager.db.tourTypes.size)
 
         newManager.delete("tour_types", 100)
         assertEquals(10, newManager.db.tourTypes.size)
+    }
+
+    @Test
+    fun testCustomOutputStream() {
+        val customOutput = ByteArrayOutputStream()
+        val customManager = DBManager(testFile, PrintStream(customOutput))
+        customManager.load()
+        customManager.save()
+
+        val output = customOutput.toString()
+        assertTrue(output.contains("Данные сохранены"))
+    }
+
+    @Test
+    fun testDefaultOutputStream() {
+        val defaultManager = DBManager(testFile)
+        assertNotNull(defaultManager)
     }
 }
